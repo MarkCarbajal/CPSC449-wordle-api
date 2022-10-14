@@ -1,2 +1,2 @@
 # CPSC449-Flask-Api
-Wordle Flash REST API
+Wordle Flask REST API
