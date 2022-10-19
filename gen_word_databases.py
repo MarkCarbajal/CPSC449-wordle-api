@@ -25,6 +25,7 @@ NYTIMES_LINK = "https://www.nytimes.com/games-assets/v2/" \
 WORDLE_JS = "wordle.9137f06eca6ff33e8d5a306bda84e37b69a8f227.js"
 CORRECT_FNAME = "correct.json"
 VALID_FNAME = "valid.json"
+DB_NAME = "src/wordle.db"
 EXP_CORRECT = 2309
 EXP_VALID = 12546
 
@@ -58,10 +59,8 @@ def get_valid_and_correct_words():
     with open(CORRECT_FNAME, 'r') as correct_fp:
         correct_words = json.load(correct_fp)
 
-    # For valid words, append the correct words as they are also valid
     with open(VALID_FNAME, 'r') as valid_fp:
         valid_words = json.load(valid_fp)
-        valid_words += correct_words
 
     return correct_words, valid_words
 
@@ -82,7 +81,7 @@ def create_db(correct_words, valid_words):
     """
     # Create the wordle.db, and if the tables already exist,
     # drop them
-    db_conn = sqlite3.connect("wordle.db")
+    db_conn = sqlite3.connect(DB_NAME)
     db_cur = db_conn.cursor()
     db_cur.execute("DROP TABLE IF EXISTS valid")
     db_cur.execute("DROP TABLE IF EXISTS correct")
@@ -106,5 +105,18 @@ def create_db(correct_words, valid_words):
 ## MAIN
 if __name__ == "__main__":
     correct, valid = get_valid_and_correct_words()
+    # Clean up the extra files
+    os.remove(VALID_FNAME)
+    os.remove(CORRECT_FNAME)
+    os.remove(WORDLE_JS)
+    # Double check that there's the expect number of words
+    if (len(correct) != EXP_CORRECT):
+        print("Something went wrong with parsing")
+        exit(1)
+    if (len(valid) != EXP_VALID):
+        print("Something went wrong with parsing")
+        exit(1)
+    # Valid should include correct
+    valid += correct
     create_db(correct, valid)
 
