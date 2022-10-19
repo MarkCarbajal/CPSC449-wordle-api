@@ -126,3 +126,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#db and initialization files
+*.db
+valid.json
+correct.json
+https://www.nytimes.com/games-assets/v2/wordle.9137f06eca6ff33e8d5a306bda84e37b69a8f227.js
