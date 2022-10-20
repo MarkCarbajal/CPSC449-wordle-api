@@ -5,6 +5,9 @@ Wordle Quart REST API
 
 ## Group 2 Members
 Maria Ortega
+
 Marina Urrutia
+
 Mark Carbajal
+
 Nicholas Fonseca
