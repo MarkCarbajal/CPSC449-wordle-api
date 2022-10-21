@@ -13,6 +13,7 @@ CREATE TABLE game(
     id INTEGER primary key,
     id_user INT references user(id),
     correct_word VARCHAR,
+    valid_word VARCHAR,
     game_win BOOLEAN,
     guess_num INT
 );
