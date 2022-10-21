@@ -12,7 +12,7 @@ from quart_schema import QuartSchema, RequestSchemaValidationError, validate_req
 app = Quart(__name__)
 QuartSchema(app)
 
-app.config.from_file(f"./etc/{__name__}.toml", toml.load)
+app.config.from_file(f"../{__name__}.toml", toml.load)
 
 ##CONNECT TO DATABASE##
 async def _connect_db():
@@ -35,3 +35,30 @@ async def close_connection(exception):
         await db.disconnect()
 
 ##WRITE API CODE HERE##
+
+# NOTE: Routes can be changed, I just wanted to get down what
+# I thought was good to move forward on them
+@app.route("/register", methods=["POST"])
+async def register():
+    db = _get_db()
+    pass
+
+
+@app.route("/login", methods=["POST"])
+async def login():
+    db = _get_db()
+    pass
+
+# Using dynamic routing, makes more sense to me. Maybe needs to change.
+@app.route("/game/<int:game_no>", methods=["GET", "POST"])
+async def game(game_no):
+    db = _get_db()
+    pass
+
+@app.route("/game/new", methods=["POST"])
+async def new_game():
+    pass
+
+@app.route("/user")
+async def get_game():
+    pass
