@@ -16,7 +16,7 @@ app.config.from_file(f"../{__name__}.toml", toml.load)
 
 ##CONNECT TO DATABASE##
 async def _connect_db():
-    
+
     database = databases.Database(app.config["DATABASES"]["URL"])
     await database.connect()
     return database
@@ -38,6 +38,15 @@ async def close_connection(exception):
 
 # NOTE: Routes can be changed, I just wanted to get down what
 # I thought was good to move forward on them
+
+#Test, returns all correct words to /, currently works.
+@app.route("/", methods=["GET"])
+async def test():
+    db = await _get_db()
+    all_words = await db.fetch_all("SELECT * FROM correct;")
+    return list(map(dict, all_words))
+
+
 @app.route("/register", methods=["POST"])
 async def register():
     db = _get_db()

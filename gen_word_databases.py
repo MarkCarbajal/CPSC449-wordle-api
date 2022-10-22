@@ -44,9 +44,9 @@ def get_valid_and_correct_words():
         A list of 2309 correct words, and a list of 12546 + 2309 valid words.
 
     Side Effects:
-        Creates 3 files - the wget'd .js file, and two json files for the 
+        Creates 3 files - the wget'd .js file, and two json files for the
         valid and correct words
-    
+
     """
     # wget the NYT Wordle game's js, and sed out the words to JSON files
     sp.run(f"wget {NYTIMES_LINK}", shell=True, stdout=open(os.devnull, 'wb'))
@@ -119,4 +119,3 @@ if __name__ == "__main__":
     # Valid should include correct
     valid += correct
     create_db(correct, valid)
-
