@@ -29,8 +29,8 @@ class Users:
 class Games:
     userid: int
     gameid: int
-    correctword: string
-    validword: string
+    correctword: str
+    validword: str
     gamewin: bool
     guessnum: int
 
