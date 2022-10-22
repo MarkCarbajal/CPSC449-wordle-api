@@ -41,7 +41,7 @@ def get_valid_and_correct_words():
         None
 
     Returns:
-        A list of 2309 correct words, and a list of 12546 + 2309 valid words.
+        A list of correct words, and a list of valid words.
 
     Side Effects:
         Creates 3 files - the wget'd .js file, and two json files for the
@@ -110,12 +110,14 @@ if __name__ == "__main__":
     os.remove(CORRECT_FNAME)
     os.remove(WORDLE_JS)
     # Double check that there's the expect number of words
-    if (len(correct) != EXP_CORRECT):
-        print("Something went wrong with parsing")
-        exit(1)
-    if (len(valid) != EXP_VALID):
-        print("Something went wrong with parsing")
-        exit(1)
+    # Comment this out as this is technically a "dynamic" solution
+#    if (len(correct) != EXP_CORRECT):
+#        print("Something went wrong with parsing")
+#        exit(1)
+#    if (len(valid) != EXP_VALID):
+#        print("Something went wrong with parsing")
+#        exit(1)
     # Valid should include correct
     valid += correct
     create_db(correct, valid)
+
