@@ -63,6 +63,16 @@ async def login():
 @app.route("/game", methods=["GET"])
 async def get_users_games():
     db = await _get_db()
+    usr_json = await request.get_json()
+    print(usr_json)
+    try:
+        user_id = int(usr_json["user-id"])
+    except (KeyError, ValueError) as e:
+        return 400
+    
+    query = select(games).where(games.userid == user_id)
+    user_games = db.fetch_all(query)
+
     
     pass
 
