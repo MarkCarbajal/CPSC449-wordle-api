@@ -7,32 +7,19 @@ import databases
 import toml
 
 from quart import Quart, g, request, abort, redirect
-from quart_schema import QuartSchema, RequestSchemaValidationError, validate_request
+from quart_schema import QuartSchema, RequestSchemaValidationError, validate_request, validate_response
 
 from http import HTTPStatus
 import json
 from sqlalchemy import select, func
 import table_declarations as td
 from typing import Optional
+import request_dataclasses as rd
 
 app = Quart(__name__)
 QuartSchema(app)
 
 app.config.from_file(f"../{__name__}.toml", toml.load)
-
-@dataclasses.dataclass
-class Users:
-    username:str
-    password:str
-
-@dataclasses.dataclass
-class Games:
-    userid: int
-    gameid: int
-    correctword: str
-    validword: str
-    gamewin: bool
-    guessnum: int
 
 ##CONNECT TO DATABASE##
 async def _get_db():
@@ -62,7 +49,7 @@ async def test():
     return list(map(dict, all_words))
 
 @app.route("/register", methods=["POST"])
-@validate_request(Users)
+@validate_request(rd.AuthRequest)
 async def create_user(data):
     db = await _get_db()
     Users = dataclasses.asdict(data)
@@ -86,6 +73,7 @@ async def create_user(data):
 #    pass
 
 @app.route("/login/<string:username>/<string:password>", methods=["GET"])
+@validate_request(rd.AuthRequest)
 async def login(username, password):
     db = await _get_db()
     #Error: 14:18:19 api.1  | sqlite3.OperationalError: no such table: Users
@@ -98,6 +86,7 @@ async def login(username, password):
 
 # Using dynamic routing, makes more sense to me. Maybe needs to change.
 @app.route("/game", methods=["GET"])
+@validate_request(rd.FullGameRequest)
 async def get_users_games():
     db = await _get_db()
     usr_json = await request.get_json()
@@ -128,7 +117,7 @@ async def post_new_game():
 
 #    await db.insert(games).values(gameid=game_id, userid=user_id,
 #            correct_word=to_guess, guessnum=6)
-    pass
+    return {"word":to_guess}, 200
 
 @app.route("/game/<int:game_id>", methods=["GET"])
 async def get_game_status(game_id):
@@ -140,6 +129,7 @@ async def get_game_status(game_id):
     pass
 
 @app.route("/game/<int:game_id>", methods=["POST"])
+@validate_request(rd.GuessRequest)
 async def play_game(game_id):
     db = await _get_db()
 
