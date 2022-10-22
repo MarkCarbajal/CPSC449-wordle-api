@@ -1,2 +1,2 @@
 [DATABASES]
-URL = 'sqlite+aiosqlite://src/wordle.db'
+URL = 'sqlite+aiosqlite:///src/wordle.db'

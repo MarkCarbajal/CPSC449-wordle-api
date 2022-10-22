@@ -12,7 +12,8 @@ from quart_schema import QuartSchema, RequestSchemaValidationError, validate_req
 from http import HTTPStatus
 import json
 import sqlalchemy
-import table_declarations
+#import table_declarations
+import os
 
 app = Quart(__name__)
 QuartSchema(app)
@@ -20,17 +21,12 @@ QuartSchema(app)
 app.config.from_file(f"../{__name__}.toml", toml.load)
 
 ##CONNECT TO DATABASE##
-async def _connect_db():
-
-    database = databases.Database(app.config["DATABASES"]["URL"])
-    await database.connect()
-    return database
-
-
-def _get_db():
-    if not hasattr(g, "sqlite_db"):
-        g.sqlite_db = _connect_db()
-    return g.sqlite_db
+async def _get_db():
+    db = getattr(g, "_sqlite_db", None)
+    if db is None:
+        db = g._sqlite_db = databases.Database(app.config["DATABASES"]["URL"])
+        await db.connect()
+    return db
 
 
 @app.teardown_appcontext
@@ -48,7 +44,7 @@ async def close_connection(exception):
 @app.route("/", methods=["GET"])
 async def test():
     db = await _get_db()
-    all_words = await db.fetch_all("SELECT * FROM correct;")
+    all_words = await db.fetch_all("SELECT * FROM valid;")
     return list(map(dict, all_words))
 
 
