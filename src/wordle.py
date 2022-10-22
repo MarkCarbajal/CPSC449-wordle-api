@@ -6,14 +6,14 @@ import textwrap
 import databases
 import toml
 
-from quart import Quart, g, request, abort
+from quart import Quart, g, request, abort, redirect
 from quart_schema import QuartSchema, RequestSchemaValidationError, validate_request
 
 from http import HTTPStatus
 import json
-import sqlalchemy
-#import table_declarations
-import os
+from sqlalchemy import select, func
+import table_declarations as td
+from typing import Optional
 
 app = Quart(__name__)
 QuartSchema(app)
@@ -50,44 +50,66 @@ async def test():
 
 @app.route("/register", methods=["POST"])
 async def register():
-    db = _get_db()
+    db = await _get_db()
     pass
 
 
 @app.route("/login", methods=["POST"])
 async def login():
-    db = _get_db()
+    db = await _get_db()
     pass
 
 # Using dynamic routing, makes more sense to me. Maybe needs to change.
-@app.route("/game/<int:game_no>", methods=["GET", "POST"])
-async def game(game_no):
-    db = _get_db()
-    query = "SELECT * FROM games WHERE id = (:game_no)"
-    game = await db.execute(query=query, value=game_no)
+@app.route("/game", methods=["GET"])
+async def get_users_games():
+    db = await _get_db()
+    
+    pass
+
+@app.route("/game", methods=["POST"])
+async def post_new_game():
+    db = await _get_db()
+    usr_json = await request.get_json()
+    print(usr_json)
+    try:
+        user_id = int(usr_json["user-id"])
+    except (KeyError, ValueError) as e:
+        return 400
+    # https://stackoverflow.com/a/33583008
+    stmt = select(td.correct).order_by(func.random())
+
+    to_guess = await db.fetch_one(stmt)
+    print(to_guess)
+
+#    await db.insert(games).values(gameid=game_id, userid=user_id, 
+#            correct_word=to_guess, guessnum=6)
+    pass
+
+@app.route("/game/<int:game_id>", methods=["GET"])
+async def get_game_status(game_id):
+    db = await _get_db()
+    query = select(games).where(games.gameid=game_id)
+    game = await db.fetch_one(query)
     if game == None:
-        return Quart.Response(status=HTTPStatus.METHOD_NOT_FOUND)
-    if request.method == "POST":
-        recvd = request.form
-        if "guess" not in recvd.keys():
-            return Quart.Response(status=HTTPStatus.BAD_REQUEST)
-        guess = recvd['guess']
-        valid_query = "SELECT * FROM valid WHERE word = (:guess)"
-        valid_match = db.execute(query=valid_query, value=guess)
-        if valid_match == None:
-            return Quart.Response(status=HTTPStatus.BAD_REQUEST)
-        if guess == game.correct:
-            return Quart.Response(status=HTTPStatus.OK)
-        else:
-            return Quart.Response(status=HTTPStatus.OK)
+        return 400
     pass
 
-@app.route("/game/new", methods=["POST"])
-async def new_game():
-    pass
+@app.route("/game/<int:game_id>", methods=["POST"])
+async def game(game_id):
+    db = await _get_db()
 
-@app.route("/user/<user_name>")
-async def get_game(username):
-
-    pass
+    query = select(games).where(games.gameid=game_id)
+    game = await db.fetch_one(query)
+    recvd = request.form
+    if "guess" not in recvd.keys():
+        return 400
+    guess = recvd['guess']
+    valid_query = "SELECT * FROM valid WHERE word = (:guess)"
+    valid_match = db.execute(query=valid_query, value=guess)
+    if valid_match == None:
+        return 400
+    if guess == game.correct:
+        return redirect(Quart.url_for(f"game/{game_id}"), 302)
+    else:
+        return redirect(Quart.url_for(f"game/{game_id}"), 302)
 
