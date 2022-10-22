@@ -61,17 +61,40 @@ async def test():
     all_words = await db.fetch_all("SELECT * FROM valid;")
     return list(map(dict, all_words))
 
-
 @app.route("/register", methods=["POST"])
-async def register():
+@validate_request(Users)
+async def create_user(data):
     db = await _get_db()
-    pass
+    Users = dataclasses.asdict(data)
+    try:
+        #Make a new user in Database
+        id = await db.execute(
+            """
+            INSERT INTO Users(username, password)
+            VALUES(:username, :password)
+            """,
+            Users,
+        )
+    except sqlite3.IntegrityError as error:
+        abort(400, error)
+    Users["id"] = id
+    return Users
 
+#@app.route("/login", methods=["POST"])
+#async def login():
+#    db = await _get_db()
+#    pass
 
-@app.route("/login", methods=["POST"])
-async def login():
+@app.route("/login/<string:username>/<string:password>", methods=["GET"])
+async def login(username, password):
     db = await _get_db()
-    pass
+    #Error: 14:18:19 api.1  | sqlite3.OperationalError: no such table: Users
+    get_userpass = "SELECT * FROM Users WHERE username= :username AND password=:password"
+    val = {"username": username, "password": password}
+    result = await db.fetch_one(get_userpass, val)
+    # If the user is registered then return true
+    if result:
+        return { "authenticated": "true" }, 200
 
 # Using dynamic routing, makes more sense to me. Maybe needs to change.
 @app.route("/game", methods=["GET"])
