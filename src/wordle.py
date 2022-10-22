@@ -20,6 +20,20 @@ QuartSchema(app)
 
 app.config.from_file(f"../{__name__}.toml", toml.load)
 
+@dataclasses.dataclass
+class Users:
+    username:str
+    password:str
+
+@dataclasses.dataclass
+class Games:
+    userid: int
+    gameid: int
+    correctword: string
+    validword: string
+    gamewin: bool
+    guessnum: int
+
 ##CONNECT TO DATABASE##
 async def _get_db():
     db = getattr(g, "_sqlite_db", None)
@@ -63,7 +77,7 @@ async def login():
 @app.route("/game", methods=["GET"])
 async def get_users_games():
     db = await _get_db()
-    
+
     pass
 
 @app.route("/game", methods=["POST"])
@@ -81,14 +95,14 @@ async def post_new_game():
     to_guess = await db.fetch_one(stmt)
     print(to_guess)
 
-#    await db.insert(games).values(gameid=game_id, userid=user_id, 
+#    await db.insert(games).values(gameid=game_id, userid=user_id,
 #            correct_word=to_guess, guessnum=6)
     pass
 
 @app.route("/game/<int:game_id>", methods=["GET"])
 async def get_game_status(game_id):
     db = await _get_db()
-    query = select(games).where(games.gameid=game_id)
+    query = select(games).where(games.gameid==game_id)
     game = await db.fetch_one(query)
     if game == None:
         return 400
@@ -98,7 +112,7 @@ async def get_game_status(game_id):
 async def game(game_id):
     db = await _get_db()
 
-    query = select(games).where(games.gameid=game_id)
+    query = select(games).where(games.gameid==game_id)
     game = await db.fetch_one(query)
     recvd = request.form
     if "guess" not in recvd.keys():
@@ -112,4 +126,3 @@ async def game(game_id):
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
     else:
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
-
