@@ -8,8 +8,8 @@ CREATE TABLE users (
     password VARCHAR
 );
 
-DROP TABLE IF EXISTS game;
-CREATE TABLE game(
+DROP TABLE IF EXISTS games;
+CREATE TABLE games (
     id INTEGER primary key,
     id_user INT references user(id),
     correct_word VARCHAR,
