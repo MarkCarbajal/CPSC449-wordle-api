@@ -22,8 +22,19 @@ users = sqlalchemy.Table(
         sqlalchemy.Column("password", sqlalchemy.String),
 )
 
-#games = sqlalchemy.Table(
-#        "games",
-#        metadata,
-#        sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-#        sqlalchemy.Column(
+games = sqlalchemy.Table(
+        "games",
+        metadata,
+        sqlalchemy.Column("gameid", sqlalchemy.Integer, primary_key=True),
+        sqlalchemy.Column("userid", sqlalchemy.Integer),
+        sqlalchemy.Column("correctword", sqlalchemy.String(length=5)),
+        sqlalchemy.Column("guess1", sqlalchemy.String(length=5)),
+        sqlalchemy.Column("guess2", sqlalchemy.String(length=5)),
+        sqlalchemy.Column("guess3", sqlalchemy.String(length=5)),
+        sqlalchemy.Column("guess4", sqlalchemy.String(length=5)),
+        sqlalchemy.Column("guess5", sqlalchemy.String(length=5)),
+        sqlalchemy.Column("guess6", sqlalchemy.String(length=5)),
+        sqlalchemy.Column("gamewin", sqlalchemy.Boolean),
+        sqlalchemy.Column("guessnum", sqlalchemy.Integer),
+)
+
