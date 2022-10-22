@@ -100,7 +100,15 @@ async def login(username, password):
 @app.route("/game", methods=["GET"])
 async def get_users_games():
     db = await _get_db()
-
+    usr_json = await request.get_json()
+    print(usr_json)
+    try:
+        user_id = int(usr_json["user-id"])
+    except (KeyError, ValueError) as e:
+        return 400
+    
+    query = select(games).where(games.userid == user_id)
+    user_games = db.fetch_all(query)
     pass
 
 @app.route("/game", methods=["POST"])
@@ -132,7 +140,7 @@ async def get_game_status(game_id):
     pass
 
 @app.route("/game/<int:game_id>", methods=["POST"])
-async def game(game_id):
+async def play_game(game_id):
     db = await _get_db()
 
     query = select(games).where(games.gameid==game_id)
@@ -149,3 +157,4 @@ async def game(game_id):
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
     else:
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
+
