@@ -48,6 +48,9 @@ async def test():
     all_words = await db.fetch_all("SELECT * FROM valid;")
     return list(map(dict, all_words))
 
+
+###########################################################
+
 @app.route("/register", methods=["POST"])
 @validate_request(rd.AuthRequest)
 async def create_user(data):
@@ -111,7 +114,7 @@ async def get_users_games():
         user_id = int(usr_json["user-id"])
     except (KeyError, ValueError) as e:
         return 400
-    
+
     query = select(games).where(games.userid == user_id)
     user_games = db.fetch_all(query)
     pass
@@ -163,4 +166,3 @@ async def play_game(game_id):
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
     else:
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
-
