@@ -61,13 +61,15 @@ async def test():
     all_words = await db.fetch_all("SELECT * FROM valid;")
     return list(map(dict, all_words))
 
+
+###########################################################
+
 @app.route("/register", methods=["POST"])
 @validate_request(Users)
 async def create_user(data):
     db = await _get_db()
     Users = dataclasses.asdict(data)
     try:
-        #Make a new user in Database
         id = await db.execute(
             """
             INSERT INTO Users(username, password)
@@ -77,8 +79,7 @@ async def create_user(data):
         )
     except sqlite3.IntegrityError as error:
         abort(400, error)
-    Users["id"] = id
-    return Users
+    return (Users,201)
 
 #@app.route("/login", methods=["POST"])
 #async def login():
@@ -94,7 +95,7 @@ async def login(username, password):
     result = await db.fetch_one(get_userpass, val)
     # If the user is registered then return true
     if result:
-        return { "authenticated": "true" }, 200
+        return {"authenticated": "true"}, 200, app.route('/game')
 
 # Using dynamic routing, makes more sense to me. Maybe needs to change.
 @app.route("/game", methods=["GET"])
@@ -106,7 +107,7 @@ async def get_users_games():
         user_id = int(usr_json["user-id"])
     except (KeyError, ValueError) as e:
         return 400
-    
+
     query = select(games).where(games.userid == user_id)
     user_games = db.fetch_all(query)
     pass
@@ -157,4 +158,3 @@ async def play_game(game_id):
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
     else:
         return redirect(Quart.url_for(f"game/{game_id}"), 302)
-
