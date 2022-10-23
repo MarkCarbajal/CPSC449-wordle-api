@@ -87,16 +87,20 @@ def create_db(correct_words, valid_words):
     db_cur.execute("DROP TABLE IF EXISTS correct")
 
     # Create the new tables
-    db_conn.execute("CREATE TABLE correct(words CHAR(5))")
-    db_conn.execute("CREATE TABLE valid(words CHAR(5))")
+    db_cur.execute("CREATE TABLE correct(words CHAR(5))")
+    db_cur.execute("CREATE TABLE valid(words CHAR(5))")
 
     # Iterate thru the words and insert them into the tables
     for word in correct_words:
         word = ( f"{word}", )
-        db_conn.execute("INSERT INTO correct VALUES (?)", word)
+        db_cur.execute("INSERT INTO correct VALUES (?)", word)
     for word in valid_words:
         word = ( f"{word}", )
-        db_conn.execute("INSERT INTO valid VALUES (?)", word)
+        db_cur.execute("INSERT INTO valid VALUES (?)", word)
+
+    with open("src/wordle.sql") as sql_script:
+        db_cur.executescript(sql_script.read())
+
 
     # Commit the changes
     db_conn.commit()

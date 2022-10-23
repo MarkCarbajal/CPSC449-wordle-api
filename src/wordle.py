@@ -11,7 +11,7 @@ from quart_schema import QuartSchema, RequestSchemaValidationError, validate_req
 
 from http import HTTPStatus
 import json
-from sqlalchemy import select, func
+from sqlalchemy import select, insert, func
 import table_declarations as td
 from typing import Optional
 import request_dataclasses as rd
@@ -52,37 +52,53 @@ async def test():
 @validate_request(rd.AuthRequest)
 async def create_user(data):
     db = await _get_db()
-    Users = dataclasses.asdict(data)
+    usr_json = await request.get_json()
     try:
-        #Make a new user in Database
-        id = await db.execute(
-            """
-            INSERT INTO Users(username, password)
-            VALUES(:username, :password)
-            """,
-            Users,
-        )
-    except sqlite3.IntegrityError as error:
-        abort(400, error)
-    Users["id"] = id
-    return Users
+        username = usr_json['username']
+        password = usr_json['password']
+    except KeyError:
+        return {'msg': 'Provide {"username":<username>, "password":<password>'},\
+                400
+    if username == '' or password == '':
+        return {'msg': 'Username and password cannot be blank'},\
+                400
 
-#@app.route("/login", methods=["POST"])
-#async def login():
-#    db = await _get_db()
-#    pass
+    user_select = select(td.users)\
+        .where(td.users.c.username == usr_json["username"])
+    match = await db.fetch_one(user_select)
+    print(match)
+    if match is not None:
+        return {'msg': 'Username taken'}, 400
 
-@app.route("/login/<string:username>/<string:password>", methods=["GET"])
-@validate_request(rd.AuthRequest)
-async def login(username, password):
+    user_insert = insert(td.users).values(username=usr_json["username"], 
+                                          password=usr_json["password"])
+    user_id = await db.execute(user_insert)
+
+    return {"user_id": user_id}, 201
+
+
+@app.route("/login", methods=["GET"])
+async def login():
     db = await _get_db()
-    #Error: 14:18:19 api.1  | sqlite3.OperationalError: no such table: Users
-    get_userpass = "SELECT * FROM Users WHERE username= :username AND password=:password"
-    val = {"username": username, "password": password}
-    result = await db.fetch_one(get_userpass, val)
-    # If the user is registered then return true
-    if result:
-        return { "authenticated": "true" }, 200
+    auth = request.headers["Authorization"]
+    print(auth)
+    try:
+        # mask off
+        auth_d = {}
+        auth_d['uname'] = auth.split()[1].split(':')[0]
+        auth_d['pword'] = auth.split()[1].split(':')[1]
+    except IndexError:
+        return "Fufill challenge in WWW-Authenticate", 401,\
+               {'WWW-Authenticate': "Basic <username>:<password>"}
+
+    query = select(td.users).where(td.users.c.username == auth_d["uname"])\
+            .where(td.users.c.password == auth_d["uname"])
+    result = await db.fetch_one(query)
+    if result is not None:
+        return { "authenticated": True }, 200
+    return "Incorrect username or password",  401,\
+            {'WWW-Authenticate': "Basic <username>:<password>"}
+
 
 # Using dynamic routing, makes more sense to me. Maybe needs to change.
 @app.route("/game", methods=["GET"])

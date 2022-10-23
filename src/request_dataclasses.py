@@ -3,7 +3,7 @@ from typing import Optional
 
 @dataclass
 class AuthRequest:
-    user_name: str
+    username: str
     password: str
 
 
