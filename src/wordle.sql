@@ -11,14 +11,9 @@ CREATE TABLE users (
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     gameid INTEGER primary key,
-    userid INT references user(id),
+    userid INT,
     correctword VARCHAR(5),
-    guess1 VARCHAR(5),
-    guess2 VARCHAR(5),
-    guess3 VARCHAR(5),
-    guess4 VARCHAR(5),
-    guess5 VARCHAR(5),
-    guess6 VARCHAR(5),
+    guesses VARCHAR(30),
     gamewin BOOLEAN,
     guessnum INT
 );
